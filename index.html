@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Real Estate Price Drop Alerter — live demo</title>
+<meta property="og:url" content="https://amos-mig.github.io/real-estate-price-drop-alerter-demo/">
+<style>
+:root{--a:#10b981;--bg:#0b0d12;--pn:#14171f;--bd:#262b36;--tx:#e8eaf0;--mu:#9aa3b2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,'Segoe UI',Roboto,sans-serif}
+.mono,pre,code,.log,.inp,select{font-family:ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace}
+.ban{background:var(--a);color:#052e21;font-weight:600;font-size:13px;text-align:center;padding:8px 14px}
+header,.wrap,footer{max-width:1080px;margin:0 auto;padding:0 16px}
+header{padding-top:30px;padding-bottom:4px}
+h1{margin:0 0 8px;font-size:clamp(22px,4vw,34px);color:var(--a);letter-spacing:-.5px}
+.sub{color:var(--mu);max-width:780px}
+.tags{font:12px/1 ui-monospace,monospace;color:var(--mu)}
+.tags b{color:var(--a);font-weight:400}
+h2{font-size:16px;margin:32px 0 12px}
+.panel{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.duo{display:grid;grid-template-columns:330px 1fr;gap:14px}
+label{display:block;font-size:12px;color:var(--mu);margin:9px 0 3px}
+.inp,select{width:100%;background:var(--bg);border:1px solid var(--bd);color:var(--tx);border-radius:7px;padding:8px 10px;font-size:14px}
+.btn{width:100%;margin-top:14px;background:var(--a);color:#052e21;border:0;border-radius:8px;padding:11px;font-weight:700;font-size:14px;cursor:pointer}
+.ghost{background:none;border:1px solid var(--bd);color:var(--mu);width:100%;margin-top:8px;padding:8px;border-radius:8px;cursor:pointer;font-size:13px}
+.hint{font-size:12px;color:var(--mu);margin:10px 0 0}
+.log{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:12px;min-height:160px;font-size:12.5px;color:var(--mu)}
+.la{color:var(--a)}
+.cur{animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.rc{border:1px solid var(--bd);background:#10131a;border-radius:9px;padding:10px 12px;margin-top:10px}
+.rr{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-weight:600}
+.rs{font-size:12.5px;color:var(--mu);margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dn{color:var(--a)}
+s{color:var(--mu)}
+i{color:var(--tx);font-style:normal}
+.sim{font-size:12px;color:var(--mu);margin:12px 0 0}
+#note{display:none;font-size:12.5px;color:var(--a);margin-top:12px;border:1px dashed var(--a);border-radius:8px;padding:8px 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}
+.f{background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:13.5px}
+.f b{display:block;margin-bottom:6px}
+.ok{color:var(--a)}
+.f.lock{border-style:dashed;color:var(--mu)}
+.code{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:16px;overflow:auto;font-size:13px;line-height:1.6}
+.c{color:#5b6472}
+.k{color:var(--a)}
+.cta{display:inline-block;background:var(--a);color:#052e21;font-weight:800;padding:13px 26px;border-radius:9px;text-decoration:none;margin:16px 0 8px}
+.small{font-size:12.5px;color:var(--mu);margin:10px 0 0}
+footer{margin-top:44px;padding-top:18px;padding-bottom:30px;border-top:1px solid var(--bd);color:var(--mu);font-size:13px}
+footer a{color:var(--a)}
+@media(max-width:840px){.duo{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="ban">Live demo — simulated listings across 4 sample areas. The full product watches real portals 24/7 ↓</div>
+<header>
+<h1>Real Estate Price Drop Alerter</h1>
+<p class="sub">Watches property listings and flags price drops and new matches for your search criteria — the alert that gets you to the good deal before the crowd. Flats, houses, or land.</p>
+<p class="tags"><b>python</b> · monitoring · alerts · real estate · single file</p>
+</header>
+<div class="wrap">
+<h2>The watch cycle, live <span class="c">(simulated data)</span></h2>
+<div class="duo">
+<div class="panel">
+<label>Area</label>
+<select id="area">
+<option value="riverside">Riverside</option>
+<option value="oldtown">Old Town</option>
+<option value="harbor">Harbor Point</option>
+<option value="greenfield">Greenfield</option>
+</select>
+<label>Type</label>
+<select id="type"><option>flat</option><option>house</option><option>land</option></select>
+<label>Max price ($)</label>
+<input class="inp" id="maxp" type="number" value="340000" step="10000" min="50000">
+<label>Min bedrooms <span class="c">(flats/houses)</span></label>
+<select id="beds"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+<button class="btn" onclick="run()">▶ Run watch cycle</button>
+<button class="ghost" onclick="reset()">Reset snapshot (seen.json)</button>
+<p class="hint">Same criteria → same snapshot. That's the point: rerun to see dedup.</p>
+</div>
+<div class="panel">
+<div class="log mono" id="log"></div>
+<div id="alerts"></div>
+<div id="note">Dedup store hit — these alerts were already delivered. You only hear it once.</div>
+<p class="sim">⚠ Simulated response — the demo generates listings in-browser. The real alerter runs this scan against live portals on your schedule.</p>
+</div>
+</div>
+<h2>What's in the kit</h2>
+<div class="cards">
+<div class="f"><b class="ok">✓ Criteria watcher</b>Filters listings by area, size and price, re-checked on a schedule. Try it left.</div>
+<div class="f"><b class="ok">✓ Price history per property</b>Every drop charted against prior asks — negotiate from the cut, not the listing price.</div>
+<div class="f"><b class="ok">✓ Dedup store</b>seen.json keeps state between runs, so repeats are suppressed and you hear it once.</div>
+<div class="f lock"><b>🔒 Push channels</b>Telegram, email &amp; SMS delivery with quiet hours — in the full kit.</div>
+<div class="f lock"><b>🔒 Multi-portal adapters</b>Crawler templates for the major portals + scheduled digest — in the full kit.</div>
+</div>
+<h2>How you run it</h2>
+<div class="code mono"><code><span class="c"># alerter.py — single file, stdlib only (full config in the kit)</span>
+SEARCH = {
+  <span class="k">"areas"</span>: [<span class="k">"riverside"</span>, <span class="k">"old-town"</span>],
+  <span class="k">"type"</span>: <span class="k">"flat"</span>,
+  <span class="k">"max_price"</span>: 340_000,
+  <span class="k">"min_beds"</span>: 2,
+}
+ALERT = <span class="k">"telegram"</span>            <span class="c"># telegram | email | sms</span>
+
+for listing in portal.fetch(SEARCH):  <span class="c"># adapt selectors to your portal</span>
+    change = history.diff(listing)    <span class="c"># price drop / new match / None</span>
+    if change:
+        ALERT.send(change.summary())  <span class="c"># "↓ 6.4% · Bellfoundry Yard 12"</span>
+        history.remember(listing)     <span class="c"># seen.json — dedup + price memory</span>
+
+<span class="c"># … cron / systemd timer wiring in the full file</span></code></div>
+<p class="small">Single Python file, stdlib only — adapt the selectors to your portal and schedule it with cron.</p>
+<a class="cta" href="https://amosmign.gumroad.com/l/real-estate-price-drop-alerter">Get the full alerter · 29</a>
+</div>
+<footer>Real Estate Price Drop Alerter · <a href="https://kits.amosmignery.dev">kits.amosmignery.dev</a> · <a href="https://github.com/Amos-Mig/real-estate-price-drop-alerter-demo">GitHub</a></footer>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toLocaleString('en-US');
+const AREAS={
+riverside:{base:318,streets:['Riverside Ave','Ferry Walk','Dockyard Ln','Mill Quay','Weir St','Boathouse Rd']},
+oldtown:{base:246,streets:['Bellfoundry Yard','Chandler St','Old Mint Alley','Clocktower Rd','Tanners Row','Vintner Ln']},
+harbor:{base:412,streets:['Harbor Point Dr','Lighthouse Way','Custom House Sq','Anchor Rd','Seiners Walk','Pilot St']},
+greenfield:{base:188,streets:['Orchard Rise','Beech Cres','Fen Lane','Grange Rd','Willow Bank','Meadow Gate']}};
+function rng(seed){let x=2166136261;for(let i=0;i<seed.length;i++){x^=seed.charCodeAt(i);x=Math.imul(x,16777619)}return()=>{x=Math.imul(x^x>>>15,x|1);x^=x+Math.imul(x^x>>>7,x|61);return((x^x>>>14)>>>0)/4294967296}}
+let seen={};
+function gen(){
+ const ak=$('area').value,ty=$('type').value,mp=+$('maxp').value||340000,mb=+$('beds').value;
+ const seed=ak+'|'+ty+'|'+mp+'|'+mb,r=rng(seed),A=AREAS[ak],out=[];let g=0;const n=4+Math.floor(r()*3);
+ while(out.length<n&&g++<80){
+  const s=A.streets[Math.floor(r()*A.streets.length)],no=1+Math.floor(r()*180);
+  let beds=0,plot=0,m2;
+  if(ty==='land'){plot=600+Math.floor(r()*2400);m2=plot}
+  else{beds=mb+Math.floor(r()*3);m2=Math.round(40+beds*(46+r()*16))}
+  let price=Math.round(A.base*1000*(ty==='land'?.35+plot/14000:ty==='house'?1.15+r()*.4:.75+r()*.5)/1000)*1000;
+  if(price>mp)continue;
+  let hist=null;
+  if(r()<.5){const d=.03+r()*.09,p0=Math.round(price/(1-d)/1000)*1000;hist=[p0,p0,Math.round((p0+price)/2/1000)*1000,price]}
+  out.push({id:s+' '+no,beds,plot,m2,price,hist,drop:hist?(hist[0]-price)/hist[0]:0,isNew:!hist&&r()<.35});
+ }
+ out.sort((a,b)=>b.drop-a.drop);
+ return{out,total:90+Math.floor(r()*80),seed};
+}
+function spark(h){const mn=Math.min(...h),mx=Math.max(...h),W=104,H=30;
+ const p=h.map((v,i)=>[4+i*(W-8)/3,H-4-(v-mn)/(mx-mn)*(H-8)]);
+ return '<svg width="'+W+'" height="'+H+'"><polyline fill="none" stroke="#10b981" stroke-width="2" points="'+p.map(q=>q.map(z=>z.toFixed(1)).join(',')).join(' ')+'"/><circle cx="'+p[3][0].toFixed(1)+'" cy="'+p[3][1].toFixed(1)+'" r="2.7" fill="#10b981"/></svg>'}
+function card(o,fresh){
+ const pr=o.hist?'<s>$'+fmt(o.hist[0])+'</s> <b class="dn">$'+fmt(o.price)+'</b>':'<b>$'+fmt(o.price)+'</b>';
+ const det=o.plot?fmt(o.plot)+' m² plot':o.beds+'-bed · '+o.m2+' m²';
+ const tag=o.hist?'<b class="dn">↓ '+(o.drop*100).toFixed(1)+'%</b>':'<b>★ new match</b>';
+ return '<div class="rc"><div class="rr"><span>'+o.id+'</span>'+tag+'</div>'+
+  '<div class="rs">'+det+' · '+pr+(o.hist?spark(o.hist):'')+'</div>'+
+  '<div class="rs">'+(o.hist?'price history above — negotiate from the drop':'matched criteria today')+' · <i>'+(fresh?'alert queued':'seen in snapshot — suppressed')+'</i></div></div>';
+}
+function run(){
+ const ty=$('type').value,{out,total,seed}=gen(),first=!seen[seed];seen[seed]=out.length;
+ const log=$('log'),box=$('alerts');box.innerHTML='';log.innerHTML='';const L=[];
+ L.push(['w','criteria: '+$('area').selectedOptions[0].text.toLowerCase()+' · '+ty+' · max $'+fmt(+$('maxp').value)+(ty!=='land'?' · '+$('beds').value+'+ beds':' · any plot')]);
+ L.push(['w','fetching listings from portal …']);
+ L.push(['w',total+' listings scanned in '+(0.8+Math.random()*1.5).toFixed(1)+'s · '+out.length+' within criteria']);
+ if(!out.length){L.push(['w','0 matches — try a higher max price or another area']);}
+ else{
+  const drops=out.filter(o=>o.hist),news=out.filter(o=>o.isNew);
+  if(first){drops.forEach(o=>L.push(['a','↓ price drop '+(o.drop*100).toFixed(1)+'% · '+o.id]));
+   news.forEach(o=>L.push(['a','★ new match · '+o.id+' · $'+fmt(o.price)]));
+   L.push(['w',(drops.length+news.length)+' alert(s) queued → push channel (Telegram/email in full kit)']);}
+  else{L.push(['w','snapshot hit: '+seen[seed]+' listings already known']);
+   L.push(['w',drops.length+' drop(s) + '+news.length+' new — suppressed by dedup ✓ you hear it once']);}
+  drops.concat(news).forEach(o=>box.insertAdjacentHTML('beforeend',card(o,first)));
+ }
+ $('note').style.display=first?'none':(out.length?'block':'none');
+ L.forEach((l,i)=>setTimeout(()=>log.insertAdjacentHTML('beforeend','<div class="l'+l[0]+'">&gt; '+l[1]+'</div>'),i*230));
+ setTimeout(()=>log.insertAdjacentHTML('beforeend','<div class="cur">&gt; ▊</div>'),L.length*230+120);
+}
+function reset(){seen={};$('log').insertAdjacentHTML('beforeend','<div class="lw">&gt; snapshot cleared — next run re-alerts from scratch</div>');$('note').style.display='none'}
+run();
+</script>
+</body>
+</html>
